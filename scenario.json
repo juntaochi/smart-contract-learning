@@ -1,0 +1,78 @@
+{
+  "accounts": {
+    "account{0}": "0x5d26552fe617460250e68e737f2a60ea6402eea9"
+  },
+  "linkReferences": {},
+  "transactions": [
+    {
+      "timestamp": 1765357725719,
+      "record": {
+        "value": "0",
+        "inputs": "()",
+        "parameters": [],
+        "name": "",
+        "type": "constructor",
+        "abi": "0x4607a3da23dbf969139917c4055ad199ba527589011940c27a30a1f0f00f7aec",
+        "contractName": "Counter",
+        "bytecode": "6080604052348015600e575f5ffd5b505f5f8190555061020c806100225f395ff3fe608060405234801561000f575f5ffd5b506004361061004a575f3560e01c806306661abd1461004e5780631003e2d21461005857806361bc221a146100745780636d4ce63c14610092575b5f5ffd5b6100566100b0565b005b610072600480360381019061006d9190610123565b6100c5565b005b61007c6100df565b604051610089919061015d565b60405180910390f35b61009a6100e4565b6040516100a7919061015d565b60405180910390f35b60015f546100be91906101a3565b5f81905550565b805f5f8282546100d591906101a3565b9250508190555050565b5f5481565b5f5f54905090565b5f5ffd5b5f819050919050565b610102816100f0565b811461010c575f5ffd5b50565b5f8135905061011d816100f9565b92915050565b5f60208284031215610138576101376100ec565b5b5f6101458482850161010f565b91505092915050565b610157816100f0565b82525050565b5f6020820190506101705f83018461014e565b92915050565b7f4e487b71000000000000000000000000000000000000000000000000000000005f52601160045260245ffd5b5f6101ad826100f0565b91506101b8836100f0565b92508282019050808211156101d0576101cf610176565b5b9291505056fea26469706673582212209006ba170c368278bc9c9ba6a12785997f9e1f2bbd68c88b047f157281943a4d64736f6c634300081e0033",
+        "linkReferences": {},
+        "from": "account{0}"
+      }
+    }
+  ],
+  "abis": {
+    "0x4607a3da23dbf969139917c4055ad199ba527589011940c27a30a1f0f00f7aec": [
+      {
+        "inputs": [],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "x",
+            "type": "uint256"
+          }
+        ],
+        "name": "add",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "count",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "counter",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "get",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      }
+    ]
+  }
+}
