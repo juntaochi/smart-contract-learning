@@ -1,0 +1,12 @@
+{
+  "name": "smart-contract-learning",
+  "version": "1.0.0",
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^22.19.2",
+    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
+    "dotenv": "^16.4.7",
+    "hardhat": "^2.22.12",
+    "typescript": "~5.6.3"
+  }
+}
