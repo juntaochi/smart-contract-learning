@@ -1,10 +1,19 @@
-# Sample Hardhat 3 Beta Project (minimal)
+# Foundry Project
 
-This project has a minimal setup of Hardhat 3 Beta, without any plugins.
+This repo is set up to use Foundry (`forge`, `cast`, `anvil`) for compiling and testing Solidity.
 
-## What's included?
+## Layout
 
-The project includes native support for TypeScript, Hardhat scripts, tasks, and support for Solidity compilation and tests.
+- Solidity sources live in `contracts/` (configured as `src` in `foundry.toml`).
+- Forge tests live in `test/`.
+- Build output goes to `out/` (gitignored).
+
+## Commands
+
+- Build: `forge build`
+- Test: `forge test`
+- Format: `forge fmt`
+- Local chain: `anvil`
 
 ## Bank demo flow
 
@@ -13,3 +22,9 @@ The project includes native support for TypeScript, Hardhat scripts, tasks, and 
 3. Have users call `deposit()` or send ETH directly to `BigBank` (each deposit must be at least `0.001 ether`).
 4. The `Admin` owner calls `adminWithdraw(BigBank)` to pull all funds from `BigBank` into the `Admin` contract.
 5. The `Admin` owner can finally call `withdrawToOwner()` to move the funds from `Admin` to their own EOA.
+
+## Deploy (example)
+
+With `SEPOLIA_RPC_URL` and `PRIVATE_KEY` set in your environment:
+
+- Deploy: `forge create --rpc-url $SEPOLIA_RPC_URL --private-key $PRIVATE_KEY contracts/bank.sol:BigBank`

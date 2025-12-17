@@ -10,7 +10,7 @@
 # Hardhat Build Artifacts
 /artifacts
 
-# Hardhat compilation (v2) support directory
+# Hardhat compilation (v2) support directory / Foundry cache
 /cache
 
 # Typechain output
@@ -18,6 +18,12 @@
 
 # Hardhat coverage reports
 /coverage
+
+# Foundry build output
+/out
+/broadcast
+.forge-snapshots/
+.gas-snapshot
 
 # Local environment variables
 .env
