@@ -1,0 +1,19 @@
+{
+    "name": "阳明花园",
+    "description": "阳明花园前门 - Yangming Garden front gate",
+    "image": "ipfs://QmPPQ28diVKnLbXC4UnRFJ8BYY6pGMbBsgQsCrVm29UiZh",
+    "attributes": [
+        {
+            "trait_type": "Location",
+            "value": "China"
+        },
+        {
+            "trait_type": "Type",
+            "value": "Architecture"
+        },
+        {
+            "trait_type": "Style",
+            "value": "Modern"
+        }
+    ]
+}
