@@ -1,5 +1,5 @@
 import { cookieStorage, createStorage, createConfig } from 'wagmi'
-import { mainnet, sepolia } from 'wagmi/chains'
+import { mainnet, sepolia, foundry } from 'wagmi/chains'
 import { createAppKit } from '@reown/appkit/react'
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi'
 
@@ -9,7 +9,7 @@ if (!projectId) {
     throw new Error('Project ID is not defined')
 }
 
-export const networks = [mainnet, sepolia]
+export const networks = [mainnet, sepolia, foundry]
 
 export const wagmiAdapter = new WagmiAdapter({
     ssr: true,
@@ -28,7 +28,7 @@ export const metadata = {
 
 createAppKit({
     adapters: [wagmiAdapter],
-    networks: [sepolia, mainnet],
+    networks: [sepolia, mainnet, foundry],
     metadata: metadata,
     projectId,
     features: {

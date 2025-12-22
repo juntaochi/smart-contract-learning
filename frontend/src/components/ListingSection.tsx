@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useWriteContract, useWaitForTransactionReceipt, useReadContract, useAccount } from 'wagmi'
+import { useState, useEffect } from 'react'
+import { useWriteContract, useWaitForTransactionReceipt, useAccount } from 'wagmi'
 import { parseEther } from 'viem'
 import { MARKET_ABI, NFT_ABI, NFT_ADDRESS, MARKET_ADDRESS } from '@/config/constants'
 
@@ -10,11 +10,26 @@ export default function ListingSection() {
 
     const [tokenId, setTokenId] = useState('')
     const [price, setPrice] = useState('')
-    const [isMinting, setIsMinting] = useState(false)
 
     // 1. Mint NFT
     const { writeContract: mintNFT, data: mintHash, isPending: isMintPending } = useWriteContract()
-    const { isLoading: isMintConfirming, isSuccess: isMintSuccess } = useWaitForTransactionReceipt({ hash: mintHash })
+    const { isLoading: isMintConfirming, isSuccess: isMintSuccess, data: mintReceipt } = useWaitForTransactionReceipt({ hash: mintHash })
+
+    // Auto-fill Token ID after minting
+    useEffect(() => {
+        if (isMintSuccess && mintReceipt) {
+            // Find Transfer event logs: Topic0 is Transfer signature. 
+            // For standard ERC721, Transfer(from, to, tokenId) are all indexed.
+            // topics[3] is tokenId.
+            const transferLog = mintReceipt.logs.find(log => log.topics.length === 4)
+            if (transferLog && transferLog.topics[3]) {
+                const id = parseInt(transferLog.topics[3], 16).toString()
+                setTokenId(id)
+            }
+        }
+    }, [isMintSuccess, mintReceipt])
+
+    // 2. Approve Market
 
     // 2. Approve Market
     const { writeContract: approveNFT, data: approveHash, isPending: isApprovePending } = useWriteContract()
@@ -25,7 +40,6 @@ export default function ListingSection() {
     const { isLoading: isListConfirming, isSuccess: isListSuccess } = useWaitForTransactionReceipt({ hash: listHash })
 
     const handleMint = async () => {
-        // Mint random Token URI for demo
         mintNFT({
             address: NFT_ADDRESS,
             abi: NFT_ABI,
@@ -55,63 +69,68 @@ export default function ListingSection() {
     }
 
     return (
-        <div className="p-6 border rounded-xl shadow-sm bg-white dark:bg-zinc-900 space-y-6">
-            <h2 className="text-2xl font-bold">Seller Dashboard</h2>
+        <div className="p-6 space-y-8">
 
-            {/* Mint Section */}
-            <div className="border-b pb-4">
-                <h3 className="font-semibold mb-2">1. Get Test NFT</h3>
+            {/* Step 1: Mint */}
+            <div className="relative pl-8 border-l-2 border-green-100 pb-2">
+                <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-green-500 ring-4 ring-green-50" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">1. Get Test NFT</h3>
+                <p className="text-sm text-gray-500 mb-4">Mint a free TestNFT to start listing.</p>
                 <button
                     onClick={handleMint}
                     disabled={isMintPending || isMintConfirming}
-                    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+                    className="w-full sm:w-auto px-6 py-2.5 bg-green-600/10 text-green-700 font-medium rounded-lg hover:bg-green-600/20 active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {isMintPending ? 'Confirming...' : isMintConfirming ? 'Minting...' : 'Mint New NFT'}
                 </button>
-                {isMintSuccess && <p className="text-green-500 text-sm mt-2">NFT Minted! Check Explorer for Token ID.</p>}
+                {isMintSuccess && <div className="mt-3 p-3 bg-green-50 text-green-700 text-sm rounded-lg animate-fade-in">Test NFT Minted Successfully!</div>}
             </div>
 
-            {/* Approve Section */}
-            <div className="border-b pb-4">
-                <h3 className="font-semibold mb-2">2. Approve Market</h3>
-                <div className="flex gap-2">
+            {/* Step 2: Approve */}
+            <div className="relative pl-8 border-l-2 border-yellow-100 pb-2">
+                <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-yellow-400 ring-4 ring-yellow-50" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">2. Approve Market</h3>
+                <p className="text-sm text-gray-500 mb-4">Authorize the market to sell your NFT.</p>
+                <div className="flex gap-3">
                     <input
                         type="number"
                         placeholder="Token ID"
-                        className="border p-2 rounded dark:bg-zinc-800"
+                        className="flex-1 min-w-0 resize-none rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm outline-none focus:border-yellow-400 focus:bg-white focus:ring-2 focus:ring-yellow-100 transition"
                         value={tokenId}
                         onChange={e => setTokenId(e.target.value)}
                     />
                     <button
                         onClick={handleApprove}
                         disabled={isApprovePending || isApproveConfirming}
-                        className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 disabled:opacity-50"
+                        className="px-6 py-2.5 bg-yellow-500 text-white font-medium rounded-lg hover:bg-yellow-600 active:scale-95 transition shadow-sm shadow-yellow-200 disabled:opacity-50"
                     >
-                        {isApprovePending || isApproveConfirming ? 'Approving...' : 'Approve'}
+                        {isApprovePending || isApproveConfirming ? 'Wait...' : 'Approve'}
                     </button>
                 </div>
             </div>
 
-            {/* List Section */}
-            <div>
-                <h3 className="font-semibold mb-2">3. List on Market</h3>
-                <div className="flex gap-2 items-center">
+            {/* Step 3: List */}
+            <div className="relative pl-8">
+                <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-blue-500 ring-4 ring-blue-50" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">3. List on Market</h3>
+                <p className="text-sm text-gray-500 mb-4">Set your price and list it for sale.</p>
+                <div className="flex gap-3 items-center">
                     <input
                         type="number"
                         placeholder="Price (Tokens)"
-                        className="border p-2 rounded dark:bg-zinc-800"
+                        className="flex-1 min-w-0 resize-none rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition"
                         value={price}
                         onChange={e => setPrice(e.target.value)}
                     />
                     <button
                         onClick={handleList}
                         disabled={isListPending || isListConfirming}
-                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                        className="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 active:scale-95 transition shadow-sm shadow-blue-200 disabled:opacity-50"
                     >
                         {isListPending || isListConfirming ? 'Listing...' : 'List NFT'}
                     </button>
                 </div>
-                {isListSuccess && <p className="text-blue-500 text-sm mt-2">NFT Listed Successfully!</p>}
+                {isListSuccess && <div className="mt-3 p-3 bg-blue-50 text-blue-700 text-sm rounded-lg animate-fade-in">NFT Listed Successfully!</div>}
             </div>
         </div>
     )

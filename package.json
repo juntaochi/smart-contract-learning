@@ -5,6 +5,13 @@
   "scripts": {
     "build": "forge build",
     "test": "forge test",
-    "fmt": "forge fmt"
+    "fmt": "forge fmt",
+    "listener": "node listener/index.js"
+  },
+  "dependencies": {
+    "viem": "^2.43.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "@types/node": "^25.0.3"
   }
 }
