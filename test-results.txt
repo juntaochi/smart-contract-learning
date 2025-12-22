@@ -1,0 +1,599 @@
+Compiling 1 files with Solc 0.8.28
+Solc 0.8.28 finished in 4.06s
+Compiler run successful!
+
+Ran 1 test for test/NFTMarket.t.sol:NFTMarketInvariantTest
+[PASS] invariant_MarketNeverHoldsTokens() (runs: 256, calls: 128000, reverts: 63775)
+
+╭------------------+----------+-------+---------+----------╮
+| Contract         | Selector | Calls | Reverts | Discards |
++==========================================================+
+| NFTMarketHandler | buyNFT   | 64225 | 0       | 0        |
+|------------------+----------+-------+---------+----------|
+| NFTMarketHandler | listNFT  | 63775 | 63775   | 0        |
+╰------------------+----------+-------+---------+----------╯
+
+Logs:
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 1
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 4
+  Bound result 0
+  Bound result 0
+  Bound result 0
+
+Suite result: ok. 1 passed; 0 failed; 0 skipped; finished in 11.93s (11.92s CPU time)
+
+Ran 17 tests for test/NFTMarket.t.sol:NFTMarketTest
+[PASS] invariant_MarketHasNoTokenBalance() (runs: 256, calls: 128000, reverts: 112641)
+
+╭--------------------------+----------------------+-------+---------+----------╮
+| Contract                 | Selector             | Calls | Reverts | Discards |
++==============================================================================+
+| ERC20WithCallbackAndData | approve              | 7571  | 0       | 0        |
+|--------------------------+----------------------+-------+---------+----------|
+| ERC20WithCallbackAndData | transfer             | 7610  | 7508    | 0        |
+|--------------------------+----------------------+-------+---------+----------|
+| ERC20WithCallbackAndData | transferFrom         | 7445  | 7351    | 0        |
+|--------------------------+----------------------+-------+---------+----------|
+| ERC20WithCallbackAndData | transferWithCallback | 7531  | 7419    | 0        |
+|--------------------------+----------------------+-------+---------+----------|
+| NFTMarket                | buyNFT               | 7599  | 7599    | 0        |
+|--------------------------+----------------------+-------+---------+----------|
+| NFTMarket                | delist               | 7496  | 7496    | 0        |
+|--------------------------+----------------------+-------+---------+----------|
+| NFTMarket                | list                 | 7391  | 7391    | 0        |
+|--------------------------+----------------------+-------+---------+----------|
+| NFTMarket                | tokensReceived       | 7580  | 7580    | 0        |
+|--------------------------+----------------------+-------+---------+----------|
+| YangmingGardenNFT        | approve              | 7595  | 7595    | 0        |
+|--------------------------+----------------------+-------+---------+----------|
+| YangmingGardenNFT        | batchMint            | 7611  | 7611    | 0        |
+|--------------------------+----------------------+-------+---------+----------|
+| YangmingGardenNFT        | renounceOwnership    | 7441  | 7441    | 0        |
+|--------------------------+----------------------+-------+---------+----------|
+| YangmingGardenNFT        | safeMint             | 7498  | 7497    | 0        |
+|--------------------------+----------------------+-------+---------+----------|
+| YangmingGardenNFT        | safeTransferFrom     | 15075 | 15075   | 0        |
+|--------------------------+----------------------+-------+---------+----------|
+| YangmingGardenNFT        | setApprovalForAll    | 7479  | 0       | 0        |
+|--------------------------+----------------------+-------+---------+----------|
+| YangmingGardenNFT        | transferFrom         | 7591  | 7591    | 0        |
+|--------------------------+----------------------+-------+---------+----------|
+| YangmingGardenNFT        | transferOwnership    | 7487  | 7487    | 0        |
+╰--------------------------+----------------------+-------+---------+----------╯
+
+[PASS] testFuzz_Buy_RandomAddress(uint256) (runs: 256, μ: 239523, ~: 239440)
+[PASS] testFuzz_ListAndBuy_RandomPrice(uint256) (runs: 256, μ: 219970, ~: 220124)
+[PASS] testFuzz_ListAndBuy_RandomPriceAndAddress(uint256,uint256) (runs: 256, μ: 240562, ~: 240589)
+[PASS] test_BuyNFT_Fail_AlreadySold() (gas: 238744)
+[PASS] test_BuyNFT_Fail_BuyOwnNFT() (gas: 214943)
+[PASS] test_BuyNFT_Fail_InsufficientPayment() (gas: 172325)
+[PASS] test_BuyNFT_Fail_NotListed() (gas: 15494)
+[PASS] test_BuyNFT_Success() (gas: 224587)
+[PASS] test_BuyWithCallback_Fail_InsufficientPayment() (gas: 194587)
+[PASS] test_BuyWithCallback_RefundsExcess() (gas: 221492)
+[PASS] test_Delist_Fail_NotSeller() (gas: 156129)
+[PASS] test_Delist_Success() (gas: 149500)
+[PASS] test_List_Fail_NotApproved() (gas: 25481)
+[PASS] test_List_Fail_NotOwner() (gas: 18990)
+[PASS] test_List_Fail_ZeroPrice() (gas: 44009)
+[PASS] test_List_Success() (gas: 159559)
+Suite result: ok. 17 passed; 0 failed; 0 skipped; finished in 21.18s (21.50s CPU time)
+
+Ran 2 test suites in 21.19s (33.11s CPU time): 18 tests passed, 0 failed, 0 skipped (18 total tests)

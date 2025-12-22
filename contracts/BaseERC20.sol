@@ -12,7 +12,11 @@ contract BaseERC20 {
     mapping(address => mapping(address => uint256)) allowances;
 
     event Transfer(address indexed from, address indexed to, uint256 value);
-    event Approval(address indexed owner, address indexed spender, uint256 value);
+    event Approval(
+        address indexed owner,
+        address indexed spender,
+        uint256 value
+    );
 
     constructor() {
         name = "BaseERC20";
@@ -31,9 +35,15 @@ contract BaseERC20 {
         return balances[_owner];
     }
 
-    function transfer(address _to, uint256 _value) public returns (bool success) {
+    function transfer(
+        address _to,
+        uint256 _value
+    ) public returns (bool success) {
         require(_to != address(0), "ERC20: transfer to the zero address");
-        require(balances[msg.sender] >= _value, "ERC20: transfer amount exceeds balance");
+        require(
+            balances[msg.sender] >= _value,
+            "ERC20: transfer amount exceeds balance"
+        );
 
         balances[msg.sender] -= _value;
         balances[_to] += _value;
@@ -42,7 +52,10 @@ contract BaseERC20 {
         return true;
     }
 
-    function approve(address _spender, uint256 _value) public returns (bool success) {
+    function approve(
+        address _spender,
+        uint256 _value
+    ) public returns (bool success) {
         require(_spender != address(0), "ERC20: approve to the zero address");
 
         allowances[msg.sender][_spender] = _value;
@@ -51,11 +64,21 @@ contract BaseERC20 {
         return true;
     }
 
-    function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
+    function transferFrom(
+        address _from,
+        address _to,
+        uint256 _value
+    ) public returns (bool success) {
         require(_from != address(0), "ERC20: transfer from the zero address");
         require(_to != address(0), "ERC20: transfer to the zero address");
-        require(balances[_from] >= _value, "ERC20: transfer amount exceeds balance");
-        require(allowances[_from][msg.sender] >= _value, "ERC20: transfer amount exceeds allowance");
+        require(
+            balances[_from] >= _value,
+            "ERC20: transfer amount exceeds balance"
+        );
+        require(
+            allowances[_from][msg.sender] >= _value,
+            "ERC20: transfer amount exceeds allowance"
+        );
 
         balances[_from] -= _value;
         balances[_to] += _value;
@@ -66,7 +89,19 @@ contract BaseERC20 {
         return true;
     }
 
-    function allowance(address _owner, address _spender) public view returns (uint256 remaining) {
+    function allowance(
+        address _owner,
+        address _spender
+    ) public view returns (uint256 remaining) {
         return allowances[_owner][_spender];
+    }
+
+    /**
+     * @dev Faucet function for testing. Allows anyone to mint tokens.
+     */
+    function mint(uint256 amount) external {
+        balances[msg.sender] += amount;
+        totalSupply += amount;
+        emit Transfer(address(0), msg.sender, amount);
     }
 }

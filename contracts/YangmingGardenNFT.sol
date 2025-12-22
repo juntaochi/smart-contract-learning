@@ -21,7 +21,7 @@ contract YangmingGardenNFT is ERC721, ERC721URIStorage, Ownable {
      * @param uri NFT元数据的IPFS URI
      * @return tokenId 新铸造的NFT的ID
      */
-    function safeMint(address to, string memory uri) public onlyOwner returns (uint256) {
+    function safeMint(address to, string memory uri) public returns (uint256) {
         uint256 tokenId = _nextTokenId++;
         _safeMint(to, tokenId);
         _setTokenURI(tokenId, uri);
@@ -48,21 +48,15 @@ contract YangmingGardenNFT is ERC721, ERC721URIStorage, Ownable {
 
     // 以下函数是重写以解决多重继承冲突
 
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        override(ERC721, ERC721URIStorage)
-        returns (string memory)
-    {
+    function tokenURI(
+        uint256 tokenId
+    ) public view override(ERC721, ERC721URIStorage) returns (string memory) {
         return super.tokenURI(tokenId);
     }
 
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(ERC721, ERC721URIStorage)
-        returns (bool)
-    {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view override(ERC721, ERC721URIStorage) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 }
