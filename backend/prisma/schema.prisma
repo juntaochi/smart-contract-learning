@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model BlockTracker {
+  id               String   @id
+  tokenAddress     String   @unique
+  lastIndexedBlock BigInt
+  updatedAt        DateTime
+}
+
+model Transfer {
+  id              String   @id
+  transactionHash String
+  blockNumber     BigInt
+  blockTimestamp  DateTime
+  logIndex        Int
+  tokenAddress    String
+  from            String
+  to              String
+  value           String
+  createdAt       DateTime @default(now())
+
+  @@unique([transactionHash, logIndex])
+  @@index([blockNumber])
+  @@index([blockTimestamp])
+  @@index([from])
+  @@index([from, tokenAddress])
+  @@index([to])
+  @@index([to, tokenAddress])
+  @@index([tokenAddress])
+}

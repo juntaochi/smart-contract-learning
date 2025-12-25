@@ -22,8 +22,8 @@ export function Navigation() {
                         <Link
                             href="/"
                             className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${pathname === '/'
-                                    ? 'border-blue-500 text-gray-900'
-                                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                                ? 'border-blue-500 text-gray-900'
+                                : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                                 }`}
                         >
                             NFT Market
@@ -31,11 +31,20 @@ export function Navigation() {
                         <Link
                             href="/tokenbank"
                             className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${pathname === '/tokenbank'
-                                    ? 'border-blue-500 text-gray-900'
-                                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                                ? 'border-blue-500 text-gray-900'
+                                : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                                 }`}
                         >
                             Token Bank
+                        </Link>
+                        <Link
+                            href="/transfers"
+                            className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${pathname === '/transfers'
+                                ? 'border-blue-500 text-gray-900'
+                                : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                                }`}
+                        >
+                            Transfer History
                         </Link>
                     </div>
 
