@@ -7,6 +7,8 @@
  *   npm run dev balance <address> - 查询 ETH 余额
  *   npm run dev token-balance <address> - 查询 Token 余额
  *   npm run dev transfer <to> <amount>  - 转账 Token
+ *   npm run dev eip7702-upgrade   - 升级 EOA 为 Smart Account
+ *   npm run dev eip7702-deposit <amount> - EIP-7702 批量存款
  */
 import { Command } from 'commander'
 import { config } from 'dotenv'
@@ -17,6 +19,7 @@ import {
     getAccountFromPrivateKey
 } from './wallet.js'
 import { transferERC20 } from './transaction.js'
+import { eip7702BatchDeposit, upgradeToSmartAccount } from './eip7702.js'
 import type { Address, Hex } from 'viem'
 
 // 加载 .env 配置
@@ -251,6 +254,85 @@ program
         }
 
         console.log('═'.repeat(60))
+    })
+
+/**
+ * 命令 6: 升级 EOA 为 Smart Account (EIP-7702)
+ *
+ * 学习要点:
+ * - EIP-7702 授权签名
+ * - EOA 临时获得智能合约功能
+ * - MetaMask Delegator 合约
+ */
+program
+    .command('eip7702-upgrade')
+    .description('升级 EOA 为 MetaMask Smart Account (EIP-7702)')
+    .action(async () => {
+        // 检查私钥
+        if (!PRIVATE_KEY) {
+            console.error('❌ 错误: 请在 .env 文件中设置 PRIVATE_KEY')
+            process.exit(1)
+        }
+
+        try {
+            const result = await upgradeToSmartAccount(RPC_URL, PRIVATE_KEY)
+
+            if (result.success) {
+                console.log('\n✅ 操作完成!')
+            } else {
+                console.error('\n❌ 操作失败')
+                process.exit(1)
+            }
+        } catch (error: any) {
+            console.error('❌ 升级失败:', error.message)
+            process.exit(1)
+        }
+    })
+
+/**
+ * 命令 7: EIP-7702 批量存款 (approve + deposit)
+ *
+ * 学习要点:
+ * - 批量交易打包
+ * - 单笔交易完成多个操作
+ * - 无需单独 approve 交易
+ */
+program
+    .command('eip7702-deposit')
+    .description('EIP-7702 批量存款: 在单笔交易中完成 approve + deposit')
+    .argument('<amount>', '存款金额（Token 单位，如 1.5）')
+    .action(async (amount: string) => {
+        // 检查私钥
+        if (!PRIVATE_KEY) {
+            console.error('❌ 错误: 请在 .env 文件中设置 PRIVATE_KEY')
+            process.exit(1)
+        }
+
+        // 验证金额
+        const amountNum = parseFloat(amount)
+        if (isNaN(amountNum) || amountNum <= 0) {
+            console.error('❌ 错误: 请输入有效的存款金额')
+            process.exit(1)
+        }
+
+        try {
+            const result = await eip7702BatchDeposit(RPC_URL, PRIVATE_KEY, amount)
+
+            if (result.success) {
+                console.log('\n✅ 批量存款完成!')
+                console.log('   你可以在 Etherscan 上查看交易详情:')
+                console.log(`   https://sepolia.etherscan.io/tx/${result.batchHash}`)
+            } else {
+                console.error('\n❌ 批量存款失败')
+                process.exit(1)
+            }
+        } catch (error: any) {
+            console.error('❌ 批量存款失败:', error.message)
+            if (error.cause) {
+                console.error('   原因:', error.cause)
+            }
+            process.exit(1)
+        }
     })
 
 // 解析命令行参数

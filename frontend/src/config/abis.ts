@@ -1,4 +1,51 @@
 
+// ============================================
+// EIP-7702 MetaMask Delegator Configuration
+// ============================================
+
+// MetaMask Official EIP-7702 Delegator Contract (EIP7702StatelessDeleGator)
+export const EIP7702_DELEGATOR_ADDRESS = '0x63c0c19a282a1B52b07dD5a65b58948A07DAE32B'
+
+// IERC7821 Batch Execution Interface ABI
+export const EIP7702_DELEGATOR_ABI = [
+    {
+        "type": "function",
+        "name": "execute",
+        "inputs": [
+            { "name": "mode", "type": "bytes32", "internalType": "ModeCode" },
+            { "name": "executionData", "type": "bytes", "internalType": "bytes" }
+        ],
+        "outputs": [],
+        "stateMutability": "payable"
+    },
+    {
+        "type": "function",
+        "name": "supportsExecutionMode",
+        "inputs": [
+            { "name": "mode", "type": "bytes32", "internalType": "ModeCode" }
+        ],
+        "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+        "stateMutability": "view"
+    }
+] as const
+
+// ERC-7579 Execution Mode Constants
+// See: https://eips.ethereum.org/EIPS/eip-7579
+export const EXECUTION_MODE = {
+    // Single execution, revert on failure
+    SINGLE_REVERT: '0x0000000000000000000000000000000000000000000000000000000000000000' as const,
+    // Single execution, skip on failure  
+    SINGLE_SKIP: '0x0001000000000000000000000000000000000000000000000000000000000000' as const,
+    // Batch execution, revert on failure
+    BATCH_REVERT: '0x0100000000000000000000000000000000000000000000000000000000000000' as const,
+    // Batch execution, skip on failure
+    BATCH_SKIP: '0x0101000000000000000000000000000000000000000000000000000000000000' as const,
+} as const
+
+// ============================================
+// TokenBank Configuration
+// ============================================
+
 export const TOKEN_BANK_ADDRESS = '0xd295804891ced6f832673ef1f0ad955a4a5bb75c'
 export const ERC20_TOKEN_ADDRESS = '0x132d8a7b73e62094ff6fa73f3f7d1b8d76467dc2'
 
