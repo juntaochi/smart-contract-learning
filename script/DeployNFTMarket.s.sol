@@ -19,8 +19,8 @@ contract DeployNFTMarket is Script {
         YangmingGardenNFT nft = new YangmingGardenNFT();
         console.log("NFT Contract deployed at:", address(nft));
 
-        // 3. Deploy Market
-        NFTMarket market = new NFTMarket(address(token));
+        // 3. Deploy Market (deployer is also the projectOwner for whitelist signing)
+        NFTMarket market = new NFTMarket(address(token), deployer);
         console.log("NFT Market deployed at:", address(market));
 
         // 4. Setup initial state for testing

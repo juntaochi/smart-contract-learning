@@ -24,7 +24,7 @@ contract DeploySepolia is Script {
         console.log("YangmingGardenNFT deployed at:", address(nft));
 
         // 3. Deploy Market
-        NFTMarket market = new NFTMarket(address(token));
+        NFTMarket market = new NFTMarket(address(token), deployer);
         console.log("NFTMarket deployed at:", address(market));
 
         vm.stopBroadcast();

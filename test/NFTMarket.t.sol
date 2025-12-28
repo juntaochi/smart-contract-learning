@@ -58,8 +58,8 @@ contract NFTMarketTest is Test {
         // 部署 NFT 合约
         nft = new YangmingGardenNFT();
 
-        // 部署市场合约
-        market = new NFTMarket(address(token));
+        // 部署市场合约（seller 也作为 projectOwner）
+        market = new NFTMarket(address(token), seller);
 
         // 给 seller 铸造 NFT (Token ID: 0)
         nft.safeMint(seller, TEST_URI);
@@ -408,7 +408,7 @@ contract NFTMarketInvariantTest is Test {
     function setUp() public {
         token = new ERC20WithCallbackAndData();
         nft = new YangmingGardenNFT();
-        market = new NFTMarket(address(token));
+        market = new NFTMarket(address(token), address(this));
 
         handler = new NFTMarketHandler(market, token, nft);
 

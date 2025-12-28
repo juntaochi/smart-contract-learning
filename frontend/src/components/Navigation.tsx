@@ -38,6 +38,26 @@ export function Navigation() {
                             Token Bank
                         </Link>
                         <Link
+                            href="/tokenbank-permit"
+                            className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${pathname === '/tokenbank-permit'
+                                ? 'border-purple-500 text-gray-900'
+                                : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                                }`}
+                        >
+                            <span className="mr-1">⚡</span>
+                            Permit Deposit
+                        </Link>
+                        <Link
+                            href="/nft-whitelist"
+                            className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${pathname === '/nft-whitelist'
+                                ? 'border-indigo-500 text-gray-900'
+                                : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                                }`}
+                        >
+                            <span className="mr-1">🎫</span>
+                            NFT Whitelist
+                        </Link>
+                        <Link
                             href="/transfers"
                             className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${pathname === '/transfers'
                                 ? 'border-blue-500 text-gray-900'

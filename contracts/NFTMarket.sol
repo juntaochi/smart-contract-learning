@@ -4,14 +4,17 @@ pragma solidity ^0.8.0;
 import "./ITokenReceiverWithData.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 /**
  * @title NFTMarket
  * @dev NFT 交易市场合约
  * 支持使用 ERC20 代币购买 NFT
  * 实现了 ITokenReceiverWithData 接口，支持通过 transferWithCallback 购买
+ * 支持 EIP-712 白名单签名购买（permitBuy）
  */
-contract NFTMarket is ITokenReceiverWithData {
+contract NFTMarket is ITokenReceiverWithData, EIP712 {
     // NFT 上架信息结构
     struct Listing {
         address seller; // 卖家地址
@@ -24,8 +27,20 @@ contract NFTMarket is ITokenReceiverWithData {
     // 支付代币合约地址
     IERC20 public paymentToken;
 
+    // 项目方地址（白名单签名者）
+    address public projectOwner;
+
     // 上架列表：nftContract => tokenId => Listing
     mapping(address => mapping(uint256 => Listing)) public listings;
+
+    // 用户 nonce（防重放）
+    mapping(address => uint256) public nonces;
+
+    // EIP-712 类型哈希
+    bytes32 public constant WHITELIST_TYPEHASH =
+        keccak256(
+            "WhitelistPermit(address buyer,address nftContract,uint256 tokenId,uint256 nonce,uint256 deadline)"
+        );
 
     // 事件
     event NFTListed(
@@ -52,13 +67,22 @@ contract NFTMarket is ITokenReceiverWithData {
     /**
      * @dev 构造函数
      * @param _paymentToken 用于支付的 ERC20 代币合约地址
+     * @param _projectOwner 项目方地址（白名单签名者）
      */
-    constructor(address _paymentToken) {
+    constructor(
+        address _paymentToken,
+        address _projectOwner
+    ) EIP712("NFTMarket", "1") {
         require(
             _paymentToken != address(0),
             "NFTMarket: invalid payment token"
         );
+        require(
+            _projectOwner != address(0),
+            "NFTMarket: invalid project owner"
+        );
         paymentToken = IERC20(_paymentToken);
+        projectOwner = _projectOwner;
     }
 
     /**
@@ -221,5 +245,74 @@ contract NFTMarket is ITokenReceiverWithData {
         uint256 tokenId
     ) external view returns (Listing memory) {
         return listings[nftContract][tokenId];
+    }
+
+    /**
+     * @dev 白名单签名购买 (EIP-712)
+     * 项目方通过链下签名授权特定地址购买特定 NFT
+     * @param nftContract NFT 合约地址
+     * @param tokenId NFT Token ID
+     * @param deadline 签名过期时间
+     * @param v 签名参数 v
+     * @param r 签名参数 r
+     * @param s 签名参数 s
+     */
+    function permitBuy(
+        address nftContract,
+        uint256 tokenId,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external {
+        // 1. 验证未过期
+        require(block.timestamp <= deadline, "NFTMarket: signature expired");
+
+        // 2. 构建 EIP-712 哈希
+        bytes32 structHash = keccak256(
+            abi.encode(
+                WHITELIST_TYPEHASH,
+                msg.sender,
+                nftContract,
+                tokenId,
+                nonces[msg.sender]++,
+                deadline
+            )
+        );
+
+        bytes32 digest = _hashTypedDataV4(structHash);
+
+        // 3. 恢复签名者地址
+        address signer = ECDSA.recover(digest, v, r, s);
+        require(signer == projectOwner, "NFTMarket: invalid signature");
+
+        // 4. 获取上架信息
+        Listing storage listing = listings[nftContract][tokenId];
+        require(listing.isActive, "NFTMarket: NFT not listed");
+        require(listing.seller != msg.sender, "NFTMarket: cannot buy own NFT");
+
+        uint256 price = listing.price;
+        address seller = listing.seller;
+
+        // 5. 标记为已售
+        listing.isActive = false;
+
+        // 6. 转移代币给卖家
+        require(
+            paymentToken.transferFrom(msg.sender, seller, price),
+            "NFTMarket: payment failed"
+        );
+
+        // 7. 转移 NFT 给买家
+        IERC721(nftContract).transferFrom(address(this), msg.sender, tokenId);
+
+        emit NFTSold(seller, msg.sender, nftContract, tokenId, price);
+    }
+
+    /**
+     * @dev 获取 EIP-712 域分隔符（用于测试和前端）
+     */
+    function DOMAIN_SEPARATOR() external view returns (bytes32) {
+        return _domainSeparatorV4();
     }
 }
