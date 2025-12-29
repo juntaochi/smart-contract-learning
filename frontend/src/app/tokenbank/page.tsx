@@ -1,51 +1,98 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
-import { parseEther, formatEther } from 'viem'
-import { TOKEN_BANK_ADDRESS, TOKEN_BANK_ABI, ERC20_TOKEN_ADDRESS, ERC20_TOKEN_ABI } from '@/config/abis'
+import { useAccount, useReadContract, useWalletClient, usePublicClient, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
+import { parseEther, formatEther, Address, maxUint256 } from 'viem'
+import { TOKENS, BANKS, JAC_TOKEN_ABI, ERC20_TOKEN_ABI, TOKEN_BANK_UNIFIED_ABI, PERMIT2_ADDRESS } from '@/config/abis'
 import { useEIP7702 } from '@/hooks/useEIP7702'
+import Link from 'next/link'
 
-export default function TokenBankPage() {
+type TokenType = 'JAC' | 'ERC20'
+
+export default function UnifiedTokenBankPage() {
     const { address, isConnected } = useAccount()
+    const { data: walletClient } = useWalletClient()
+    const publicClient = usePublicClient()
+
+    // Token selection
+    const [selectedToken, setSelectedToken] = useState<TokenType>('JAC')
+
+    // Form state
     const [depositAmount, setDepositAmount] = useState('')
     const [withdrawAmount, setWithdrawAmount] = useState('')
-    const [eip7702Error, setEip7702Error] = useState<string | null>(null)
-    const [eip7702Success, setEip7702Success] = useState(false)
 
-    // EIP-7702 Hook (uses wallet_sendCalls / EIP-5792)
+    // UI state
+    const [isProcessing, setIsProcessing] = useState(false)
+    const [txHash, setTxHash] = useState<string>('')
+    const [error, setError] = useState<string>('')
+    const [success, setSuccess] = useState(false)
+
+    // EIP-7702 Hook
     const {
         isSupported: isEIP7702Supported,
         isExecuting,
         executeApproveAndDeposit,
         waitForCallsConfirmation,
         checkSupport,
-        error: eip7702HookError
     } = useEIP7702()
 
-    // Check EIP-7702/EIP-5792 support on mount
+    // Derived values based on token selection
+    const tokenConfig = TOKENS[selectedToken]
+    const bankAddress = selectedToken === 'JAC' ? BANKS.JAC : BANKS.ERC20
+    const tokenAbi = selectedToken === 'JAC' ? JAC_TOKEN_ABI : ERC20_TOKEN_ABI
+
+    // Check EIP-7702 support on mount
     useEffect(() => {
         checkSupport()
     }, [checkSupport])
 
-    // Read Balance from Token Contract
+    // Read token balance
     const { data: tokenBalance, refetch: refetchTokenBalance } = useReadContract({
-        address: ERC20_TOKEN_ADDRESS as `0x${string}`,
-        abi: ERC20_TOKEN_ABI,
+        address: tokenConfig.address as Address,
+        abi: tokenAbi,
         functionName: 'balanceOf',
         args: address ? [address] : undefined,
     })
 
-    // Read Deposit Balance from TokenBank Contract
+    // Read bank balance
     const { data: bankBalance, refetch: refetchBankBalance } = useReadContract({
-        address: TOKEN_BANK_ADDRESS as `0x${string}`,
-        abi: TOKEN_BANK_ABI,
+        address: bankAddress as Address,
+        abi: TOKEN_BANK_UNIFIED_ABI,
         functionName: 'balanceOf',
         args: address ? [address] : undefined,
     })
 
+    // Read nonce for JAC Token (EIP-2612)
+    const { data: nonce } = useReadContract({
+        address: TOKENS.JAC.address as Address,
+        abi: JAC_TOKEN_ABI,
+        functionName: 'nonces',
+        args: address ? [address] : undefined,
+        query: { enabled: selectedToken === 'JAC' }
+    })
+
+    // Read token name for JAC
+    const { data: tokenName } = useReadContract({
+        address: TOKENS.JAC.address as Address,
+        abi: JAC_TOKEN_ABI,
+        functionName: 'name',
+        query: { enabled: selectedToken === 'JAC' }
+    })
+
+    // Check Permit2 allowance
+    const { data: permit2Allowance, refetch: refetchPermit2Allowance } = useReadContract({
+        address: tokenConfig.address as Address,
+        abi: ERC20_TOKEN_ABI,
+        functionName: 'allowance',
+        args: address ? [address, PERMIT2_ADDRESS as Address] : undefined,
+    })
+
+    const hasPermit2Approval = permit2Allowance && BigInt(permit2Allowance.toString()) > 0n
+
+    // Write contract hooks
     const { writeContract: deposit, data: depositHash, isPending: isDepositPending } = useWriteContract()
     const { writeContract: withdraw, data: withdrawHash, isPending: isWithdrawPending } = useWriteContract()
+    const { writeContract: approvePermit2, data: approveHash, isPending: isApprovePending } = useWriteContract()
 
     const { isLoading: isDepositConfirming, isSuccess: isDepositSuccess } = useWaitForTransactionReceipt({
         hash: depositHash,
@@ -55,105 +102,245 @@ export default function TokenBankPage() {
         hash: withdrawHash,
     })
 
+    const { isLoading: isApproveConfirming, isSuccess: isApproveSuccess } = useWaitForTransactionReceipt({
+        hash: approveHash,
+    })
+
+    // Clear notifications
     useEffect(() => {
-        if (isDepositSuccess || isWithdrawSuccess || eip7702Success) {
+        if (success || isDepositSuccess || isWithdrawSuccess || isApproveSuccess) {
+            refetchTokenBalance()
+            refetchBankBalance()
+            refetchPermit2Allowance()
+            setDepositAmount('')
+            setWithdrawAmount('')
+            const timer = setTimeout(() => {
+                setSuccess(false)
+                setTxHash('')
+            }, 5000)
+            return () => clearTimeout(timer)
+        }
+    }, [success, isDepositSuccess, isWithdrawSuccess, isApproveSuccess, refetchTokenBalance, refetchBankBalance, refetchPermit2Allowance])
+
+    useEffect(() => {
+        if (error) {
+            const timer = setTimeout(() => setError(''), 5000)
+            return () => clearTimeout(timer)
+        }
+    }, [error])
+
+    // Approve Permit2
+    const handleApprovePermit2 = () => {
+        approvePermit2({
+            address: tokenConfig.address as Address,
+            abi: ERC20_TOKEN_ABI,
+            functionName: 'approve',
+            args: [PERMIT2_ADDRESS as Address, maxUint256],
+        })
+    }
+
+    // Traditional deposit using transferWithCallback (ERC20 only)
+    const handleCallbackDeposit = () => {
+        if (!depositAmount) return
+        deposit({
+            address: tokenConfig.address as Address,
+            abi: ERC20_TOKEN_ABI,
+            functionName: 'transferWithCallback',
+            args: [bankAddress as Address, parseEther(depositAmount)],
+        })
+    }
+
+    // EIP-2612 Permit Deposit (JAC only)
+    const handlePermitDeposit = async () => {
+        if (!depositAmount || !address || !walletClient || !publicClient) return
+
+        setIsProcessing(true)
+        setError('')
+
+        try {
+            const amount = parseEther(depositAmount)
+            const deadline = BigInt(Math.floor(Date.now() / 1000) + 3600)
+            const chainId = await publicClient.getChainId()
+
+            // EIP-712 Domain
+            const domain = {
+                name: tokenName || 'Jac Token',
+                version: '1',
+                chainId: chainId,
+                verifyingContract: TOKENS.JAC.address as Address,
+            }
+
+            const types = {
+                Permit: [
+                    { name: 'owner', type: 'address' },
+                    { name: 'spender', type: 'address' },
+                    { name: 'value', type: 'uint256' },
+                    { name: 'nonce', type: 'uint256' },
+                    { name: 'deadline', type: 'uint256' },
+                ],
+            }
+
+            const message = {
+                owner: address,
+                spender: bankAddress as Address,
+                value: amount,
+                nonce: nonce || 0n,
+                deadline,
+            }
+
+            // Request signature
+            const signature = await walletClient.signTypedData({
+                account: address,
+                domain,
+                types,
+                primaryType: 'Permit',
+                message,
+            })
+
+            // Parse signature
+            const r = signature.slice(0, 66) as `0x${string}`
+            const s = ('0x' + signature.slice(66, 130)) as `0x${string}`
+            const v = parseInt(signature.slice(130, 132), 16)
+
+            // Call permitDeposit
+            const hash = await walletClient.writeContract({
+                address: bankAddress as Address,
+                abi: TOKEN_BANK_UNIFIED_ABI,
+                functionName: 'permitDeposit',
+                args: [amount, deadline, v, r, s],
+            })
+
+            setTxHash(hash)
+            await publicClient.waitForTransactionReceipt({ hash })
+            setSuccess(true)
             refetchTokenBalance()
             refetchBankBalance()
             setDepositAmount('')
-            setWithdrawAmount('')
-        }
-    }, [isDepositSuccess, isWithdrawSuccess, eip7702Success, refetchTokenBalance, refetchBankBalance])
-
-    // Clear EIP-7702 success after 3 seconds
-    useEffect(() => {
-        if (eip7702Success) {
-            const timer = setTimeout(() => setEip7702Success(false), 3000)
-            return () => clearTimeout(timer)
-        }
-    }, [eip7702Success])
-
-    // Clear EIP-7702 error after 5 seconds
-    useEffect(() => {
-        if (eip7702Error) {
-            const timer = setTimeout(() => setEip7702Error(null), 5000)
-            return () => clearTimeout(timer)
-        }
-    }, [eip7702Error])
-
-    // Traditional deposit using transferWithCallback
-    const handleDeposit = () => {
-        if (!depositAmount) return
-        try {
-            deposit({
-                address: ERC20_TOKEN_ADDRESS as `0x${string}`,
-                abi: ERC20_TOKEN_ABI,
-                functionName: 'transferWithCallback',
-                args: [TOKEN_BANK_ADDRESS as `0x${string}`, parseEther(depositAmount)],
-            })
-        } catch (error) {
-            console.error('Deposit failed:', error)
+        } catch (err: any) {
+            console.error('Permit deposit failed:', err)
+            setError(err.message || 'Transaction failed')
+        } finally {
+            setIsProcessing(false)
         }
     }
 
-    // EIP-7702 One-Click Deposit (approve + deposit in single tx via wallet_sendCalls)
-    const handleEIP7702Deposit = async () => {
-        if (!depositAmount) return
-        setEip7702Error(null)
+    // Permit2 Deposit
+    const handlePermit2Deposit = async () => {
+        if (!depositAmount || !address || !walletClient || !publicClient) return
+
+        setIsProcessing(true)
+        setError('')
 
         try {
-            // Execute batch call - MetaMask handles EIP-7702 internally
+            const amount = parseEther(depositAmount)
+            const deadline = BigInt(Math.floor(Date.now() / 1000) + 3600)
+            const nonce = BigInt(Math.floor(Math.random() * 2 ** 48))
+            const chainId = await publicClient.getChainId()
+
+            // EIP-712 Domain for Permit2
+            const domain = {
+                name: 'Permit2',
+                chainId: chainId,
+                verifyingContract: PERMIT2_ADDRESS as Address,
+            }
+
+            const types = {
+                PermitTransferFrom: [
+                    { name: 'permitted', type: 'TokenPermissions' },
+                    { name: 'spender', type: 'address' },
+                    { name: 'nonce', type: 'uint256' },
+                    { name: 'deadline', type: 'uint256' },
+                ],
+                TokenPermissions: [
+                    { name: 'token', type: 'address' },
+                    { name: 'amount', type: 'uint256' },
+                ],
+            }
+
+            const message = {
+                permitted: {
+                    token: tokenConfig.address as Address,
+                    amount: amount,
+                },
+                spender: bankAddress as Address,
+                nonce: nonce,
+                deadline: deadline,
+            }
+
+            // Request signature
+            const signature = await walletClient.signTypedData({
+                account: address,
+                domain,
+                types,
+                primaryType: 'PermitTransferFrom',
+                message,
+            })
+
+            // Construct permitTransfer struct
+            const permitTransfer = {
+                permitted: {
+                    token: tokenConfig.address as Address,
+                    amount: amount,
+                },
+                nonce: nonce,
+                deadline: deadline,
+            }
+
+            // Call depositWithPermit2
+            const hash = await walletClient.writeContract({
+                address: bankAddress as Address,
+                abi: TOKEN_BANK_UNIFIED_ABI,
+                functionName: 'depositWithPermit2',
+                args: [permitTransfer, address, signature],
+            })
+
+            setTxHash(hash)
+            await publicClient.waitForTransactionReceipt({ hash })
+            setSuccess(true)
+            refetchTokenBalance()
+            refetchBankBalance()
+            setDepositAmount('')
+        } catch (err: any) {
+            console.error('Permit2 deposit failed:', err)
+            setError(err.message || 'Transaction failed')
+        } finally {
+            setIsProcessing(false)
+        }
+    }
+
+    // EIP-7702 Batch Deposit
+    const handleEIP7702Deposit = async () => {
+        if (!depositAmount) return
+        setError('')
+
+        try {
             const result = await executeApproveAndDeposit(depositAmount)
-
             if (result.success && result.id) {
-                // Wait for confirmation
                 const confirmation = await waitForCallsConfirmation(result.id)
-
                 if (confirmation.success) {
-                    setEip7702Success(true)
+                    setSuccess(true)
                     refetchTokenBalance()
                     refetchBankBalance()
                     setDepositAmount('')
                 } else {
-                    setEip7702Error('Transaction failed or timed out')
+                    setError('Transaction failed or timed out')
                 }
             }
-        } catch (error: unknown) {
-            console.error('EIP-7702 deposit failed:', error)
-
-            // Provide helpful error message
-            let errorMessage = 'Transaction failed'
-            if (error instanceof Error) {
-                errorMessage = error.message
-            } else if (typeof error === 'object' && error !== null) {
-                const errObj = error as { message?: string; code?: number }
-                if (errObj.message) {
-                    errorMessage = errObj.message
-                } else if (errObj.code === -32601 || errObj.code === 4200) {
-                    errorMessage = '钱包不支持 wallet_sendCalls 方法。请使用下方的传统存款方式，或使用 CLI 脚本测试 EIP-7702。'
-                }
-            }
-
-            // If error is empty object or generic, provide helpful fallback
-            if (errorMessage === 'Transaction failed' || errorMessage === '{}') {
-                errorMessage = '钱包暂不支持 EIP-7702 批量交易。请使用传统存款方式，或通过 CLI 脚本 (npm run dev -- eip7702-deposit) 测试。'
-            }
-
-            setEip7702Error(errorMessage)
+        } catch (err: any) {
+            console.error('EIP-7702 deposit failed:', err)
+            setError(err.message || 'Transaction failed')
         }
     }
 
+    // Withdraw
     const handleWithdraw = () => {
         if (!withdrawAmount) return
-        try {
-            withdraw({
-                address: TOKEN_BANK_ADDRESS as `0x${string}`,
-                abi: TOKEN_BANK_ABI,
-                functionName: 'withdraw',
-                args: [parseEther(withdrawAmount)],
-            })
-        } catch (error) {
-            console.error('Withdraw failed:', error)
-        }
+        withdraw({
+            address: bankAddress as Address,
+            abi: TOKEN_BANK_UNIFIED_ABI,
+            functionName: 'withdraw',
+            args: [parseEther(withdrawAmount)],
+        })
     }
 
     if (!isConnected) {
@@ -166,152 +353,176 @@ export default function TokenBankPage() {
 
     return (
         <div className="space-y-8">
-            <div className="mb-8">
-                <h1 className="text-4xl font-bold text-gray-900 mb-2">Token Bank</h1>
-                <p className="text-gray-600">Deposit and withdraw tokens secure and fast.</p>
+            {/* Header */}
+            <div className="flex items-center justify-between mb-8">
+                <div>
+                    <h1 className="text-4xl font-bold text-gray-900 mb-2">Token Bank Unified</h1>
+                    <p className="text-gray-600">Deposit and withdraw tokens using multiple methods</p>
+                </div>
+                <Link
+                    href="/transfers"
+                    className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all shadow-sm"
+                >
+                    <span>📜</span>
+                    View Activity
+                </Link>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Balance Info */}
-                <div className="md:col-span-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl shadow-lg p-8 text-white">
-                    <h2 className="text-2xl font-bold mb-6">Your Balances</h2>
-                    <div className="grid grid-cols-2 gap-8">
-                        <div>
-                            <p className="text-blue-100 text-sm font-medium uppercase tracking-wider">Wallet Balance</p>
-                            <p className="text-4xl font-bold mt-2">
-                                {tokenBalance ? formatEther(tokenBalance) : '0'} Tokens
-                            </p>
-                        </div>
-                        <div>
-                            <p className="text-blue-100 text-sm font-medium uppercase tracking-wider">Bank Deposit</p>
-                            <p className="text-4xl font-bold mt-2">
-                                {bankBalance ? formatEther(bankBalance) : '0'} Tokens
-                            </p>
-                        </div>
+            {/* Token Selector */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Select Token</label>
+                <div className="flex gap-4">
+                    {(Object.keys(TOKENS) as TokenType[]).map((key) => (
+                        <button
+                            key={key}
+                            onClick={() => setSelectedToken(key)}
+                            className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${selectedToken === key
+                                ? 'bg-blue-600 text-white shadow-md'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                        >
+                            <div>{TOKENS[key].name}</div>
+                            <div className="text-xs opacity-75">{TOKENS[key].symbol}</div>
+                        </button>
+                    ))}
+                </div>
+                <div className="mt-2 text-xs text-gray-500">
+                    {tokenConfig.supportsPermit && <span className="mr-3">✓ EIP-2612 Permit</span>}
+                    {tokenConfig.supportsCallback && <span className="mr-3">✓ Callback</span>}
+                    <span>✓ Permit2</span>
+                </div>
+            </div>
+
+            {/* Balance Cards */}
+            <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl shadow-lg p-8 text-white">
+                <h2 className="text-2xl font-bold mb-6">Your Balances ({tokenConfig.symbol})</h2>
+                <div className="grid grid-cols-2 gap-8">
+                    <div>
+                        <p className="text-blue-100 text-sm font-medium uppercase tracking-wider">Wallet Balance</p>
+                        <p className="text-4xl font-bold mt-2">
+                            {tokenBalance ? formatEther(tokenBalance as bigint) : '0'} {tokenConfig.symbol}
+                        </p>
+                    </div>
+                    <div>
+                        <p className="text-blue-100 text-sm font-medium uppercase tracking-wider">Bank Deposit</p>
+                        <p className="text-4xl font-bold mt-2">
+                            {bankBalance ? formatEther(bankBalance as bigint) : '0'} {tokenConfig.symbol}
+                        </p>
                     </div>
                 </div>
+            </div>
 
-                {/* EIP-7702 One-Click Deposit Section */}
-                {isEIP7702Supported && (
-                    <div className="md:col-span-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl shadow-lg p-6 text-white">
-                        <div className="flex items-center gap-3 mb-4">
-                            <span className="text-2xl">⚡</span>
-                            <div>
-                                <h2 className="text-xl font-bold">EIP-7702 一键存款</h2>
-                                <p className="text-purple-100 text-sm">
-                                    批量交易：在单笔交易中完成授权和存款 (approve + deposit)
-                                </p>
-                            </div>
-                            <span className="ml-auto bg-white/20 px-3 py-1 rounded-full text-xs font-medium">
-                                实验性功能
-                            </span>
+            {/* Permit2 Approval Notice */}
+            {!hasPermit2Approval && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                    <div className="flex items-center gap-3">
+                        <span className="text-2xl">⚠️</span>
+                        <div className="flex-1">
+                            <p className="font-medium text-yellow-800">需要授权 Permit2 才能使用 Permit2 存款</p>
+                            <p className="text-sm text-yellow-600">一次性授权，之后可用签名方式存款</p>
                         </div>
-
-                        <div className="flex gap-4 items-end">
-                            <div className="flex-1">
-                                <label className="block text-sm font-medium text-purple-100 mb-1">存款金额</label>
-                                <div className="relative">
-                                    <input
-                                        type="number"
-                                        value={depositAmount}
-                                        onChange={(e) => setDepositAmount(e.target.value)}
-                                        className="block w-full rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-200 pl-4 pr-16 py-3 focus:ring-2 focus:ring-white/50 focus:border-transparent"
-                                        placeholder="0.0"
-                                        min="0"
-                                        step="0.000000000000000001"
-                                    />
-                                    <div className="absolute inset-y-0 right-0 flex items-center pr-4">
-                                        <span className="text-purple-200 text-sm">Tokens</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <button
-                                onClick={handleEIP7702Deposit}
-                                disabled={isExecuting || !depositAmount}
-                                className={`px-8 py-3 rounded-lg font-medium shadow-lg transition-all flex items-center gap-2
-                                    ${isExecuting || !depositAmount
-                                        ? 'bg-white/30 cursor-not-allowed text-white/70'
-                                        : 'bg-white text-purple-600 hover:bg-purple-50 hover:shadow-xl active:transform active:scale-[0.98]'
-                                    }
-                                `}
-                            >
-                                {isExecuting ? (
-                                    <>
-                                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                        </svg>
-                                        执行中...
-                                    </>
-                                ) : (
-                                    <>
-                                        ⚡ 一键存款
-                                    </>
-                                )}
-                            </button>
-                        </div>
-
-                        {(eip7702Error || eip7702HookError) && (
-                            <div className="mt-4 bg-red-500/20 border border-red-300/30 rounded-lg px-4 py-2 text-sm">
-                                ❌ {eip7702Error || eip7702HookError}
-                            </div>
-                        )}
-
-                        <div className="mt-4 text-xs text-purple-200 flex items-center gap-2">
-                            <span>ℹ️</span>
-                            <span>EIP-7702 允许您的 EOA 临时获得智能合约功能，实现单笔交易完成多个操作</span>
-                        </div>
+                        <button
+                            onClick={handleApprovePermit2}
+                            disabled={isApprovePending || isApproveConfirming}
+                            className={`px-4 py-2 rounded-lg font-medium ${isApprovePending || isApproveConfirming
+                                ? 'bg-yellow-300 text-yellow-600'
+                                : 'bg-yellow-500 text-white hover:bg-yellow-600'
+                                }`}
+                        >
+                            {isApprovePending ? '确认中...' : isApproveConfirming ? '授权中...' : '授权 Permit2'}
+                        </button>
                     </div>
-                )}
+                </div>
+            )}
 
-                {/* Traditional Deposit Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Deposit Section */}
                 <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
                     <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                         <span>📥</span> Deposit Tokens
-                        {isEIP7702Supported && (
-                            <span className="text-xs font-normal text-gray-400 ml-2">(传统方式)</span>
-                        )}
                     </h2>
-                    <p className="text-gray-500 text-sm mb-6">
-                        {isEIP7702Supported
-                            ? '使用 transferWithCallback 直接存款（无需单独授权）'
-                            : 'Transfer tokens from your wallet to the bank using transferWithCallback.'
-                        }
-                    </p>
 
                     <div className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Amount to Deposit</label>
-                            <div className="relative rounded-md shadow-sm">
+                            <div className="relative">
                                 <input
                                     type="number"
                                     value={depositAmount}
                                     onChange={(e) => setDepositAmount(e.target.value)}
-                                    className="block w-full rounded-md border-gray-300 pl-4 pr-12 focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-3 border"
+                                    className="block w-full rounded-md border-gray-300 pl-4 pr-16 focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-3 border"
                                     placeholder="0.0"
                                     min="0"
                                     step="0.000000000000000001"
                                 />
                                 <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                                    <span className="text-gray-500 sm:text-sm">Tokens</span>
+                                    <span className="text-gray-500 sm:text-sm">{tokenConfig.symbol}</span>
                                 </div>
                             </div>
                         </div>
 
-                        <button
-                            onClick={handleDeposit}
-                            disabled={isDepositPending || isDepositConfirming || !depositAmount}
-                            className={`w-full py-3 px-4 rounded-lg text-white font-medium shadow-sm transition-all
-                                ${isDepositPending || isDepositConfirming || !depositAmount
-                                    ? 'bg-gray-400 cursor-not-allowed'
-                                    : 'bg-blue-600 hover:bg-blue-700 hover:shadow-md active:transform active:scale-[0.98]'
-                                }
-                            `}
-                        >
-                            {isDepositPending ? 'Confirm in Wallet...' :
-                                isDepositConfirming ? 'Depositing...' :
-                                    'Deposit'}
-                        </button>
+                        {/* Deposit Methods */}
+                        <div className="space-y-2">
+                            {/* EIP-2612 Permit (JAC only) */}
+                            {tokenConfig.supportsPermit && (
+                                <button
+                                    onClick={handlePermitDeposit}
+                                    disabled={isProcessing || !depositAmount}
+                                    className={`w-full py-3 px-4 rounded-lg font-medium shadow-sm transition-all flex items-center justify-center gap-2
+                                        ${isProcessing || !depositAmount
+                                            ? 'bg-gray-400 cursor-not-allowed text-white'
+                                            : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700'
+                                        }`}
+                                >
+                                    {isProcessing ? '处理中...' : '⚡ EIP-2612 Permit Deposit'}
+                                </button>
+                            )}
+
+                            {/* Permit2 Deposit */}
+                            {hasPermit2Approval && (
+                                <button
+                                    onClick={handlePermit2Deposit}
+                                    disabled={isProcessing || !depositAmount}
+                                    className={`w-full py-3 px-4 rounded-lg font-medium shadow-sm transition-all flex items-center justify-center gap-2
+                                        ${isProcessing || !depositAmount
+                                            ? 'bg-gray-400 cursor-not-allowed text-white'
+                                            : 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:from-cyan-700 hover:to-blue-700'
+                                        }`}
+                                >
+                                    {isProcessing ? '处理中...' : '🔐 Permit2 Deposit'}
+                                </button>
+                            )}
+
+                            {/* TransferWithCallback (ERC20 only) */}
+                            {tokenConfig.supportsCallback && (
+                                <button
+                                    onClick={handleCallbackDeposit}
+                                    disabled={isDepositPending || isDepositConfirming || !depositAmount}
+                                    className={`w-full py-3 px-4 rounded-lg font-medium shadow-sm transition-all
+                                        ${isDepositPending || isDepositConfirming || !depositAmount
+                                            ? 'bg-gray-400 cursor-not-allowed text-white'
+                                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                                        }`}
+                                >
+                                    {isDepositPending ? '确认中...' : isDepositConfirming ? '处理中...' : '📥 Callback Deposit'}
+                                </button>
+                            )}
+
+                            {/* EIP-7702 (if supported) */}
+                            {isEIP7702Supported && selectedToken === 'ERC20' && (
+                                <button
+                                    onClick={handleEIP7702Deposit}
+                                    disabled={isExecuting || !depositAmount}
+                                    className={`w-full py-3 px-4 rounded-lg font-medium shadow-sm transition-all flex items-center justify-center gap-2
+                                        ${isExecuting || !depositAmount
+                                            ? 'bg-gray-400 cursor-not-allowed text-white'
+                                            : 'bg-gradient-to-r from-green-600 to-teal-600 text-white hover:from-green-700 hover:to-teal-700'
+                                        }`}
+                                >
+                                    {isExecuting ? '执行中...' : '🚀 EIP-7702 Batch Deposit'}
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
 
@@ -320,23 +531,22 @@ export default function TokenBankPage() {
                     <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                         <span>📤</span> Withdraw Tokens
                     </h2>
-                    <p className="text-gray-500 text-sm mb-6">Withdraw your deposited tokens back to your wallet.</p>
 
                     <div className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Amount to Withdraw</label>
-                            <div className="relative rounded-md shadow-sm">
+                            <div className="relative">
                                 <input
                                     type="number"
                                     value={withdrawAmount}
                                     onChange={(e) => setWithdrawAmount(e.target.value)}
-                                    className="block w-full rounded-md border-gray-300 pl-4 pr-12 focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-3 border"
+                                    className="block w-full rounded-md border-gray-300 pl-4 pr-16 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-3 border"
                                     placeholder="0.0"
                                     min="0"
                                     step="0.000000000000000001"
                                 />
                                 <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                                    <span className="text-gray-500 sm:text-sm">Tokens</span>
+                                    <span className="text-gray-500 sm:text-sm">{tokenConfig.symbol}</span>
                                 </div>
                             </div>
                         </div>
@@ -347,32 +557,44 @@ export default function TokenBankPage() {
                             className={`w-full py-3 px-4 rounded-lg text-white font-medium shadow-sm transition-all
                                 ${isWithdrawPending || isWithdrawConfirming || !withdrawAmount
                                     ? 'bg-gray-400 cursor-not-allowed'
-                                    : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-md active:transform active:scale-[0.98]'
-                                }
-                            `}
+                                    : 'bg-indigo-600 hover:bg-indigo-700'
+                                }`}
                         >
-                            {isWithdrawPending ? 'Confirm in Wallet...' :
-                                isWithdrawConfirming ? 'Withdrawing...' :
-                                    'Withdraw'}
+                            {isWithdrawPending ? '确认中...' : isWithdrawConfirming ? '处理中...' : 'Withdraw'}
                         </button>
                     </div>
                 </div>
             </div>
 
-            {/* Success Notifications */}
-            {(isDepositSuccess || isWithdrawSuccess || eip7702Success) && (
-                <div className={`fixed bottom-4 right-4 px-6 py-4 rounded-lg shadow-lg border animate-slide-up flex items-center gap-2
-                    ${eip7702Success
-                        ? 'bg-purple-50 text-purple-700 border-purple-200'
-                        : 'bg-green-50 text-green-700 border-green-200'
-                    }
-                `}>
-                    <span className="text-xl">{eip7702Success ? '⚡' : '✅'}</span>
-                    <div>
-                        <p className="font-bold">
-                            {eip7702Success ? 'EIP-7702 交易成功!' : 'Transaction Successful!'}
-                        </p>
-                        <p className="text-sm">Your balance has been updated.</p>
+            {/* Contract Info */}
+            <div className="bg-gray-50 rounded-lg p-4 text-xs text-gray-500">
+                <p><strong>Token:</strong> {tokenConfig.address}</p>
+                <p><strong>TokenBankUnified:</strong> {bankAddress}</p>
+                <p><strong>Permit2:</strong> {PERMIT2_ADDRESS}</p>
+            </div>
+
+            {/* Success Notification */}
+            {(success || isDepositSuccess || isWithdrawSuccess || isApproveSuccess) && (
+                <div className="fixed bottom-4 right-4 bg-green-50 text-green-700 border border-green-200 px-6 py-4 rounded-lg shadow-lg">
+                    <div className="flex items-center gap-2">
+                        <span className="text-xl">✅</span>
+                        <div>
+                            <p className="font-bold">Transaction Successful!</p>
+                            <p className="text-sm">Your balance has been updated.</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Error Notification */}
+            {error && (
+                <div className="fixed bottom-4 right-4 bg-red-50 text-red-700 border border-red-200 px-6 py-4 rounded-lg shadow-lg max-w-md">
+                    <div className="flex items-start gap-2">
+                        <span className="text-xl">❌</span>
+                        <div className="flex-1">
+                            <p className="font-bold">Transaction Failed</p>
+                            <p className="text-sm mt-1 break-words">{error}</p>
+                        </div>
                     </div>
                 </div>
             )}

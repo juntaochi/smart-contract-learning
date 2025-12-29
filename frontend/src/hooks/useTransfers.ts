@@ -12,6 +12,7 @@ export interface Transfer {
     to: string;
     value: string;
     direction: 'incoming' | 'outgoing';
+    category?: 'transfer' | 'deposit' | 'withdrawal';
 }
 
 export interface TransferSummary {

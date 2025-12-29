@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { getPrismaClient } from '../../utils/db';
 import { normalizeAddress } from '../../utils/helpers';
 import { validateTransferQuery, handleValidationErrors } from '../middleware/validator';
+import { config } from '../../config';
 
 const router = Router();
 const prisma = getPrismaClient();
@@ -68,17 +69,33 @@ router.get(
             });
 
             // Format response
-            const formattedTransfers = transfers.map(transfer => ({
-                id: transfer.id,
-                transactionHash: transfer.transactionHash,
-                blockNumber: transfer.blockNumber.toString(),
-                blockTimestamp: transfer.blockTimestamp.toISOString(),
-                tokenAddress: transfer.tokenAddress,
-                from: transfer.from,
-                to: transfer.to,
-                value: transfer.value,
-                direction: transfer.from === normalizedAddress ? 'outgoing' : 'incoming',
-            }));
+            const formattedTransfers = transfers.map(transfer => {
+                const type = transfer.from === normalizedAddress ? 'outgoing' : 'incoming';
+                let category = 'transfer';
+
+                const to = transfer.to.toLowerCase();
+                const from = transfer.from.toLowerCase();
+                const bankAddresses = config.bankAddresses;
+
+                if (bankAddresses.includes(to)) {
+                    category = 'deposit';
+                } else if (bankAddresses.includes(from)) {
+                    category = 'withdrawal';
+                }
+
+                return {
+                    id: transfer.id,
+                    transactionHash: transfer.transactionHash,
+                    blockNumber: transfer.blockNumber.toString(),
+                    blockTimestamp: transfer.blockTimestamp.toISOString(),
+                    tokenAddress: transfer.tokenAddress,
+                    from: transfer.from,
+                    to: transfer.to,
+                    value: transfer.value,
+                    direction: type,
+                    category,
+                };
+            });
 
             res.json({
                 success: true,

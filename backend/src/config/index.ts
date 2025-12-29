@@ -13,6 +13,9 @@ export const config = {
     // Token addresses to index (support multiple tokens)
     tokenAddresses: process.env.TOKEN_ADDRESSES?.split(',').map(addr => addr.trim()) || [],
 
+    // Bank addresses for categorization
+    bankAddresses: process.env.BANK_ADDRESSES?.split(',').map(addr => addr.trim().toLowerCase()) || [],
+
     // API
     port: parseInt(process.env.PORT || '3000'),
     apiHost: process.env.API_HOST || '0.0.0.0',
