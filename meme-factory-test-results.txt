@@ -1,0 +1,259 @@
+No files changed, compilation skipped
+
+Ran 4 tests for test/meme/MemeFactory.t.sol:MemeFactoryTest
+[PASS] testDeployMeme() (gas: 370367)
+Traces:
+  [370367] MemeFactoryTest::testDeployMeme()
+    ├─ [0] VM::prank(SHA-256: [0x0000000000000000000000000000000000000002])
+    │   └─ ← [Return]
+    ├─ [319846] MemeFactory::deployMeme("MEME1", 1000, 100, 100000000000000000 [1e17])
+    │   ├─ [9031] → new <unknown>@0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B
+    │   │   └─ ← [Return] 45 bytes of code
+    │   ├─ [138861] 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B::initialize("MEME1", 1000, 100, MemeFactory: [0x535B3D7A252fa034Ed71F0C53ec0C6F784cB64E1])
+    │   │   ├─ [136162] MemeToken::initialize("MEME1", 1000, 100, MemeFactory: [0x535B3D7A252fa034Ed71F0C53ec0C6F784cB64E1]) [delegatecall]
+    │   │   │   ├─ emit Initialized(version: 1)
+    │   │   │   └─ ← [Stop]
+    │   │   └─ ← [Return]
+    │   ├─ emit MemeDeployed(tokenAddr: 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B, symbol: "MEME1", totalSupply: 1000, perMint: 100, price: 100000000000000000 [1e17], deployer: SHA-256: [0x0000000000000000000000000000000000000002])
+    │   └─ ← [Return] 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B
+    ├─ [5822] 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B::symbol() [staticcall]
+    │   ├─ [3144] MemeToken::symbol() [delegatecall]
+    │   │   └─ ← [Return] "MEME1"
+    │   └─ ← [Return] "MEME1"
+    ├─ [0] VM::assertEq("MEME1", "MEME1") [staticcall]
+    │   └─ ← [Return]
+    ├─ [5026] 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B::maxSupply() [staticcall]
+    │   ├─ [2360] MemeToken::maxSupply() [delegatecall]
+    │   │   └─ ← [Return] 1000
+    │   └─ ← [Return] 1000
+    ├─ [5028] 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B::perMint() [staticcall]
+    │   ├─ [2362] MemeToken::perMint() [delegatecall]
+    │   │   └─ ← [Return] 100
+    │   └─ ← [Return] 100
+    ├─ [6860] MemeFactory::memes(0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B) [staticcall]
+    │   └─ ← [Return] SHA-256: [0x0000000000000000000000000000000000000002], 100000000000000000 [1e17], true
+    └─ ← [Stop]
+
+[PASS] testMintMemeFeeDistribution() (gas: 467307)
+Traces:
+  [467307] MemeFactoryTest::testMintMemeFeeDistribution()
+    ├─ [0] VM::prank(SHA-256: [0x0000000000000000000000000000000000000002])
+    │   └─ ← [Return]
+    ├─ [319846] MemeFactory::deployMeme("MEME1", 1000, 100, 1000000000000000000 [1e18])
+    │   ├─ [9031] → new <unknown>@0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B
+    │   │   └─ ← [Return] 45 bytes of code
+    │   ├─ [138861] 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B::initialize("MEME1", 1000, 100, MemeFactory: [0x535B3D7A252fa034Ed71F0C53ec0C6F784cB64E1])
+    │   │   ├─ [136162] MemeToken::initialize("MEME1", 1000, 100, MemeFactory: [0x535B3D7A252fa034Ed71F0C53ec0C6F784cB64E1]) [delegatecall]
+    │   │   │   ├─ emit Initialized(version: 1)
+    │   │   │   └─ ← [Stop]
+    │   │   └─ ← [Return]
+    │   ├─ emit MemeDeployed(tokenAddr: 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B, symbol: "MEME1", totalSupply: 1000, perMint: 100, price: 1000000000000000000 [1e18], deployer: SHA-256: [0x0000000000000000000000000000000000000002])
+    │   └─ ← [Return] 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B
+    ├─ [0] VM::deal(RIPEMD-160: [0x0000000000000000000000000000000000000003], 10000000000000000000 [1e19])
+    │   └─ ← [Return]
+    ├─ [0] VM::prank(RIPEMD-160: [0x0000000000000000000000000000000000000003])
+    │   └─ ← [Return]
+    ├─ [110026] MemeFactory::mintMeme{value: 1000000000000000000}(0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B)
+    │   ├─ [3000] PRECOMPILES::ecrecover{value: 10000000000000000}(0x)
+    │   │   └─ ← [Return] 0x
+    │   ├─ [60] PRECOMPILES::sha256{value: 990000000000000000}(0x)
+    │   │   └─ ← [Return] 0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    │   ├─ [56168] 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B::mint(RIPEMD-160: [0x0000000000000000000000000000000000000003])
+    │   │   ├─ [53499] MemeToken::mint(RIPEMD-160: [0x0000000000000000000000000000000000000003]) [delegatecall]
+    │   │   │   ├─ emit Transfer(from: 0x0000000000000000000000000000000000000000, to: RIPEMD-160: [0x0000000000000000000000000000000000000003], value: 100)
+    │   │   │   └─ ← [Stop]
+    │   │   └─ ← [Return]
+    │   ├─ [528] 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B::perMint() [staticcall]
+    │   │   ├─ [362] MemeToken::perMint() [delegatecall]
+    │   │   │   └─ ← [Return] 100
+    │   │   └─ ← [Return] 100
+    │   ├─ emit MemeMinted(tokenAddr: 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B, minter: RIPEMD-160: [0x0000000000000000000000000000000000000003], amount: 100, fee: 1000000000000000000 [1e18])
+    │   └─ ← [Stop]
+    ├─ [5251] 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B::balanceOf(RIPEMD-160: [0x0000000000000000000000000000000000000003]) [staticcall]
+    │   ├─ [2579] MemeToken::balanceOf(RIPEMD-160: [0x0000000000000000000000000000000000000003]) [delegatecall]
+    │   │   └─ ← [Return] 100
+    │   └─ ← [Return] 100
+    ├─ [4983] 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B::totalSupply() [staticcall]
+    │   ├─ [2317] MemeToken::totalSupply() [delegatecall]
+    │   │   └─ ← [Return] 100
+    │   └─ ← [Return] 100
+    └─ ← [Stop]
+
+[PASS] testMintMemeRefund() (gas: 458780)
+Traces:
+  [458780] MemeFactoryTest::testMintMemeRefund()
+    ├─ [0] VM::prank(SHA-256: [0x0000000000000000000000000000000000000002])
+    │   └─ ← [Return]
+    ├─ [319846] MemeFactory::deployMeme("MEME1", 1000, 100, 1000000000000000000 [1e18])
+    │   ├─ [9031] → new <unknown>@0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B
+    │   │   └─ ← [Return] 45 bytes of code
+    │   ├─ [138861] 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B::initialize("MEME1", 1000, 100, MemeFactory: [0x535B3D7A252fa034Ed71F0C53ec0C6F784cB64E1])
+    │   │   ├─ [136162] MemeToken::initialize("MEME1", 1000, 100, MemeFactory: [0x535B3D7A252fa034Ed71F0C53ec0C6F784cB64E1]) [delegatecall]
+    │   │   │   ├─ emit Initialized(version: 1)
+    │   │   │   └─ ← [Stop]
+    │   │   └─ ← [Return]
+    │   ├─ emit MemeDeployed(tokenAddr: 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B, symbol: "MEME1", totalSupply: 1000, perMint: 100, price: 1000000000000000000 [1e18], deployer: SHA-256: [0x0000000000000000000000000000000000000002])
+    │   └─ ← [Return] 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B
+    ├─ [0] VM::deal(RIPEMD-160: [0x0000000000000000000000000000000000000003], 10000000000000000000 [1e19])
+    │   └─ ← [Return]
+    ├─ [0] VM::prank(RIPEMD-160: [0x0000000000000000000000000000000000000003])
+    │   └─ ← [Return]
+    ├─ [117792] MemeFactory::mintMeme{value: 2000000000000000000}(0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B)
+    │   ├─ [3000] PRECOMPILES::ecrecover{value: 10000000000000000}(0x)
+    │   │   └─ ← [Return] 0x
+    │   ├─ [60] PRECOMPILES::sha256{value: 990000000000000000}(0x)
+    │   │   └─ ← [Return] 0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    │   ├─ [600] PRECOMPILES::ripemd{value: 1000000000000000000}(0x)
+    │   │   └─ ← [Return] 0x0000000000000000000000009c1185a5c5e9fc54
+    │   ├─ [56168] 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B::mint(RIPEMD-160: [0x0000000000000000000000000000000000000003])
+    │   │   ├─ [53499] MemeToken::mint(RIPEMD-160: [0x0000000000000000000000000000000000000003]) [delegatecall]
+    │   │   │   ├─ emit Transfer(from: 0x0000000000000000000000000000000000000000, to: RIPEMD-160: [0x0000000000000000000000000000000000000003], value: 100)
+    │   │   │   └─ ← [Stop]
+    │   │   └─ ← [Return]
+    │   ├─ [528] 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B::perMint() [staticcall]
+    │   │   ├─ [362] MemeToken::perMint() [delegatecall]
+    │   │   │   └─ ← [Return] 100
+    │   │   └─ ← [Return] 100
+    │   ├─ emit MemeMinted(tokenAddr: 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B, minter: RIPEMD-160: [0x0000000000000000000000000000000000000003], amount: 100, fee: 1000000000000000000 [1e18])
+    │   └─ ← [Stop]
+    └─ ← [Stop]
+
+[PASS] testMintMemeSupplyLimit() (gas: 702453)
+Traces:
+  [702453] MemeFactoryTest::testMintMemeSupplyLimit()
+    ├─ [0] VM::prank(SHA-256: [0x0000000000000000000000000000000000000002])
+    │   └─ ← [Return]
+    ├─ [319858] MemeFactory::deployMeme("MEME1", 1000, 300, 100000000000000000 [1e17])
+    │   ├─ [9031] → new <unknown>@0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B
+    │   │   └─ ← [Return] 45 bytes of code
+    │   ├─ [138861] 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B::initialize("MEME1", 1000, 300, MemeFactory: [0x535B3D7A252fa034Ed71F0C53ec0C6F784cB64E1])
+    │   │   ├─ [136162] MemeToken::initialize("MEME1", 1000, 300, MemeFactory: [0x535B3D7A252fa034Ed71F0C53ec0C6F784cB64E1]) [delegatecall]
+    │   │   │   ├─ emit Initialized(version: 1)
+    │   │   │   └─ ← [Stop]
+    │   │   └─ ← [Return]
+    │   ├─ emit MemeDeployed(tokenAddr: 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B, symbol: "MEME1", totalSupply: 1000, perMint: 300, price: 100000000000000000 [1e17], deployer: SHA-256: [0x0000000000000000000000000000000000000002])
+    │   └─ ← [Return] 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B
+    ├─ [0] VM::deal(RIPEMD-160: [0x0000000000000000000000000000000000000003], 10000000000000000000 [1e19])
+    │   └─ ← [Return]
+    ├─ [0] VM::prank(RIPEMD-160: [0x0000000000000000000000000000000000000003])
+    │   └─ ← [Return]
+    ├─ [110026] MemeFactory::mintMeme{value: 100000000000000000}(0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B)
+    │   ├─ [3000] PRECOMPILES::ecrecover{value: 1000000000000000}(0x)
+    │   │   └─ ← [Return] 0x
+    │   ├─ [60] PRECOMPILES::sha256{value: 99000000000000000}(0x)
+    │   │   └─ ← [Return] 0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    │   ├─ [56168] 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B::mint(RIPEMD-160: [0x0000000000000000000000000000000000000003])
+    │   │   ├─ [53499] MemeToken::mint(RIPEMD-160: [0x0000000000000000000000000000000000000003]) [delegatecall]
+    │   │   │   ├─ emit Transfer(from: 0x0000000000000000000000000000000000000000, to: RIPEMD-160: [0x0000000000000000000000000000000000000003], value: 300)
+    │   │   │   └─ ← [Stop]
+    │   │   └─ ← [Return]
+    │   ├─ [528] 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B::perMint() [staticcall]
+    │   │   ├─ [362] MemeToken::perMint() [delegatecall]
+    │   │   │   └─ ← [Return] 300
+    │   │   └─ ← [Return] 300
+    │   ├─ emit MemeMinted(tokenAddr: 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B, minter: RIPEMD-160: [0x0000000000000000000000000000000000000003], amount: 300, fee: 100000000000000000 [1e17])
+    │   └─ ← [Stop]
+    ├─ [0] VM::prank(RIPEMD-160: [0x0000000000000000000000000000000000000003])
+    │   └─ ← [Return]
+    ├─ [75826] MemeFactory::mintMeme{value: 100000000000000000}(0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B)
+    │   ├─ [3000] PRECOMPILES::ecrecover{value: 1000000000000000}(0x)
+    │   │   └─ ← [Return] 0x
+    │   ├─ [60] PRECOMPILES::sha256{value: 99000000000000000}(0x)
+    │   │   └─ ← [Return] 0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    │   ├─ [21968] 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B::mint(RIPEMD-160: [0x0000000000000000000000000000000000000003])
+    │   │   ├─ [19299] MemeToken::mint(RIPEMD-160: [0x0000000000000000000000000000000000000003]) [delegatecall]
+    │   │   │   ├─ emit Transfer(from: 0x0000000000000000000000000000000000000000, to: RIPEMD-160: [0x0000000000000000000000000000000000000003], value: 300)
+    │   │   │   └─ ← [Stop]
+    │   │   └─ ← [Return]
+    │   ├─ [528] 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B::perMint() [staticcall]
+    │   │   ├─ [362] MemeToken::perMint() [delegatecall]
+    │   │   │   └─ ← [Return] 300
+    │   │   └─ ← [Return] 300
+    │   ├─ emit MemeMinted(tokenAddr: 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B, minter: RIPEMD-160: [0x0000000000000000000000000000000000000003], amount: 300, fee: 100000000000000000 [1e17])
+    │   └─ ← [Stop]
+    ├─ [0] VM::prank(RIPEMD-160: [0x0000000000000000000000000000000000000003])
+    │   └─ ← [Return]
+    ├─ [75826] MemeFactory::mintMeme{value: 100000000000000000}(0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B)
+    │   ├─ [3000] PRECOMPILES::ecrecover{value: 1000000000000000}(0x)
+    │   │   └─ ← [Return] 0x
+    │   ├─ [60] PRECOMPILES::sha256{value: 99000000000000000}(0x)
+    │   │   └─ ← [Return] 0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    │   ├─ [21968] 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B::mint(RIPEMD-160: [0x0000000000000000000000000000000000000003])
+    │   │   ├─ [19299] MemeToken::mint(RIPEMD-160: [0x0000000000000000000000000000000000000003]) [delegatecall]
+    │   │   │   ├─ emit Transfer(from: 0x0000000000000000000000000000000000000000, to: RIPEMD-160: [0x0000000000000000000000000000000000000003], value: 300)
+    │   │   │   └─ ← [Stop]
+    │   │   └─ ← [Return]
+    │   ├─ [528] 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B::perMint() [staticcall]
+    │   │   ├─ [362] MemeToken::perMint() [delegatecall]
+    │   │   │   └─ ← [Return] 300
+    │   │   └─ ← [Return] 300
+    │   ├─ emit MemeMinted(tokenAddr: 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B, minter: RIPEMD-160: [0x0000000000000000000000000000000000000003], amount: 300, fee: 100000000000000000 [1e17])
+    │   └─ ← [Stop]
+    ├─ [4983] 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B::totalSupply() [staticcall]
+    │   ├─ [2317] MemeToken::totalSupply() [delegatecall]
+    │   │   └─ ← [Return] 900
+    │   └─ ← [Return] 900
+    ├─ [0] VM::prank(RIPEMD-160: [0x0000000000000000000000000000000000000003])
+    │   └─ ← [Return]
+    ├─ [0] VM::expectRevert(custom error 0xf28dceb3:  Exceeds max supply)
+    │   └─ ← [Return]
+    ├─ [62420] MemeFactory::mintMeme{value: 100000000000000000}(0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B)
+    │   ├─ [3000] PRECOMPILES::ecrecover{value: 1000000000000000}(0x)
+    │   │   └─ ← [Return] 0x
+    │   ├─ [60] PRECOMPILES::sha256{value: 99000000000000000}(0x)
+    │   │   └─ ← [Return] 0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    │   ├─ [11666] 0xfeE3f359c00b1Ef7e9123D21ff056B7BF95e508B::mint(RIPEMD-160: [0x0000000000000000000000000000000000000003])
+    │   │   ├─ [8980] MemeToken::mint(RIPEMD-160: [0x0000000000000000000000000000000000000003]) [delegatecall]
+    │   │   │   └─ ← [Revert] Exceeds max supply
+    │   │   └─ ← [Revert] Exceeds max supply
+    │   └─ ← [Revert] Exceeds max supply
+    └─ ← [Stop]
+
+Suite result: ok. 4 passed; 0 failed; 0 skipped; finished in 573.42µs (567.83µs CPU time)
+
+╭-----------------------------------------------------+-----------------+--------+--------+--------+---------╮
+| contracts/meme/MemeFactory.sol:MemeFactory Contract |                 |        |        |        |         |
++============================================================================================================+
+| Deployment Cost                                     | Deployment Size |        |        |        |         |
+|-----------------------------------------------------+-----------------+--------+--------+--------+---------|
+| 759352                                              | 3333            |        |        |        |         |
+|-----------------------------------------------------+-----------------+--------+--------+--------+---------|
+|                                                     |                 |        |        |        |         |
+|-----------------------------------------------------+-----------------+--------+--------+--------+---------|
+| Function Name                                       | Min             | Avg    | Median | Max    | # Calls |
+|-----------------------------------------------------+-----------------+--------+--------+--------+---------|
+| deployMeme                                          | 319846          | 319849 | 319846 | 319858 | 4       |
+|-----------------------------------------------------+-----------------+--------+--------+--------+---------|
+| memes                                               | 6860            | 6860   | 6860   | 6860   | 1       |
+|-----------------------------------------------------+-----------------+--------+--------+--------+---------|
+| mintMeme                                            | 62420           | 91986  | 92926  | 117792 | 6       |
+╰-----------------------------------------------------+-----------------+--------+--------+--------+---------╯
+
+╭-------------------------------------------------+-----------------+--------+--------+--------+---------╮
+| contracts/meme/MemeToken.sol:MemeToken Contract |                 |        |        |        |         |
++========================================================================================================+
+| Deployment Cost                                 | Deployment Size |        |        |        |         |
+|-------------------------------------------------+-----------------+--------+--------+--------+---------|
+| 784299                                          | 3474            |        |        |        |         |
+|-------------------------------------------------+-----------------+--------+--------+--------+---------|
+|                                                 |                 |        |        |        |         |
+|-------------------------------------------------+-----------------+--------+--------+--------+---------|
+| Function Name                                   | Min             | Avg    | Median | Max    | # Calls |
+|-------------------------------------------------+-----------------+--------+--------+--------+---------|
+| balanceOf                                       | 2579            | 2579   | 2579   | 2579   | 1       |
+|-------------------------------------------------+-----------------+--------+--------+--------+---------|
+| initialize                                      | 136162          | 136162 | 136162 | 136162 | 4       |
+|-------------------------------------------------+-----------------+--------+--------+--------+---------|
+| maxSupply                                       | 2360            | 2360   | 2360   | 2360   | 1       |
+|-------------------------------------------------+-----------------+--------+--------+--------+---------|
+| mint                                            | 8980            | 34679  | 36399  | 53499  | 6       |
+|-------------------------------------------------+-----------------+--------+--------+--------+---------|
+| perMint                                         | 362             | 695    | 362    | 2362   | 6       |
+|-------------------------------------------------+-----------------+--------+--------+--------+---------|
+| symbol                                          | 3144            | 3144   | 3144   | 3144   | 1       |
+|-------------------------------------------------+-----------------+--------+--------+--------+---------|
+| totalSupply                                     | 2317            | 2317   | 2317   | 2317   | 2       |
+╰-------------------------------------------------+-----------------+--------+--------+--------+---------╯
+
+
+Ran 1 test suite in 2.97ms (573.42µs CPU time): 4 tests passed, 0 failed, 0 skipped (4 total tests)
