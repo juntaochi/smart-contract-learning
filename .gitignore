@@ -27,3 +27,7 @@ node_modules/
 
 # Local environment variables
 .env
+
+# macOS system files
+.DS_Store
+**/.DS_Store

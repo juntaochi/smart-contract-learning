@@ -1,0 +1,30 @@
+Compiling 1 files with Solc 0.8.28
+Solc 0.8.28 finished in 1.33s
+Compiler run successful with warnings:
+Warning (2072): Unused local variable.
+   --> test/NFTMarketUpgradeTest.t.sol:336:9:
+    |
+336 |         uint256 tokenId2 = nft.mint(seller);
+    |         ^^^^^^^^^^^^^^^^
+
+Warning (2018): Function state mutability can be restricted to view
+   --> test/NFTMarketUpgradeTest.t.sol:131:5:
+    |
+131 |     function testV1_Initialize() public {
+    |     ^ (Relevant source part starts here and spans across multiple lines).
+
+
+Ran 10 tests for test/NFTMarketUpgradeTest.t.sol:NFTMarketUpgradeTest
+[PASS] testUpgrade_StatePreservation() (gas: 2174441)
+[PASS] testV1_BuyNFT() (gas: 258024)
+[PASS] testV1_CannotBuyOwnNFT() (gas: 264350)
+[PASS] testV1_Delist() (gas: 217739)
+[PASS] testV1_Initialize() (gas: 25182)
+[PASS] testV1_List() (gas: 209633)
+[PASS] testV2_ExpiredSignature() (gas: 1866727)
+[PASS] testV2_InvalidSignature() (gas: 1875238)
+[PASS] testV2_ListWithSignature() (gas: 2010243)
+[PASS] testV2_SignatureReplayProtection() (gas: 2074002)
+Suite result: ok. 10 passed; 0 failed; 0 skipped; finished in 2.58ms (5.24ms CPU time)
+
+Ran 1 test suite in 164.81ms (2.58ms CPU time): 10 tests passed, 0 failed, 0 skipped (10 total tests)
