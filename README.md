@@ -49,3 +49,10 @@ A backend service to listen for `NFTListed` and `NFTSold` events.
    ```bash
    npm run listener
    ```
+## Upgradeable NFT Marketplace (Sepolia)
+
+A fully upgradeable ERC721 marketplace with offline signature support.
+
+- Documentation: [UPGRADEABLE_NFT_MARKET_README.md](UPGRADEABLE_NFT_MARKET_README.md)
+- Proxy Address: `0xa30d13219A1Ba963ae9e3C5bf85B166aA1F21E25`
+- Features: V1 Basic Listing, V2 Signature-based Listing (EIP-712)
